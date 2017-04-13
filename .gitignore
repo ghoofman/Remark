@@ -1,0 +1,7 @@
+node_modules/
+build/
+.vs/
+tmp/
+!/**/*.obj
+bower_components/
+dist/

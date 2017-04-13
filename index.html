@@ -1,0 +1,98 @@
+<html>
+  <head>
+      <title>Remark</title>
+      <link rel="stylesheet" href="remark.min.css" />
+      <style id="customcss"></style>
+  </head>
+  <body>
+    <div id="app" class="editor-theme-dark">
+        <div class="container">
+          <div class="editor">
+            <div class="editor-wrapper refocus">
+              <div class="editor-container">
+                <div id="editor-content" onchange="" spellcheck="false" class="editor-content" contenteditable="true" role="textbox" style="outline: none; white-space: pre-wrap; word-wrap: break-word;"><span> </span></div>
+              </div>
+            </div>
+          </div>
+      </div>
+
+    <div class="tabs-container refocus">
+        <div class="tabs refocus">
+            <div id="tab-loc" class="tab-top">
+              <div class="tab active" data-tab="default">Remark</div>
+          </div>
+          <div class="tab-bottom">
+              <div id="settings-tab" class="tab settings-toggle" data-tab="Settings">Settings</div>
+          </div>
+        </div>
+    </div>
+
+          <div id="settings" class="settings hidden">
+            <div class="settings-wrapper refocus">
+                <div id="edit-tabs" class="settings-container">
+                    <h1>Settings</h1>
+                    <div>
+                        <h3>Tabs</h3>
+                        <div>
+                            <table id="tab-list">
+                            </table>
+                        </div>
+                        <div>
+                            <div style="display: inline;">
+                                <input id="new-tab-name" type="text" placeholder="Tab Name" />
+                            </div>
+                            <div style="display: inline;"><button id="create-tab">Create Tab</button></div>
+                        </div>
+                    </div>
+                    <br />
+                    <div>
+                        <h3>Theme</h3>
+                        <a class="btn-option theme-button theme-button-dark" data-theme="dark">Dark</a>
+                        <a class="btn-option theme-button theme-button-light" data-theme="light">Light</a>
+                    </div>
+                    <br />
+                    <div>
+                        <h3>Formatting</h3>
+                        <table>
+                            <tr>
+                                <td><b>Bold</b></td>
+                                <td><span>Ctrl + B</span></td>
+                            </tr>
+                            <tr>
+                                <td><i>Itlaic</i></td>
+                                <td><span>Ctrl + I</span></td>
+                            </tr>
+                            <tr>
+                                <td><span style="text-decoration: underline">Underline</span></td>
+                                <td><span>Ctrl + U</span></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" value="checkbox1" /><span>Checkbox</span></td>
+                                <td><span>Ctrl + Shift + C</span></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <br />
+                    <div>
+                        <h3>Markdown</h3>
+                        <div><span>Regular Text</span></div>
+                        <div><span class="medium"># Medium Title</span></div>
+                        <div><span class="large">## Large Title</span></div>
+                        <div><span class="very-large">### Very Large Title</span></div>
+                    </div>
+                     <!--<div>
+                        <a class="btn-option" id="clear-state">Clear All Settings</a>
+                    </div>-->
+                    <div id="advanced">
+                        <div>
+                            <h3>Custom CSS</h3>
+                            <textarea id="customcssinput"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+      </div>
+    <script src="remark.min.js"></script>
+  </body>
+</html>
