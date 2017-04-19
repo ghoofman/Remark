@@ -228,9 +228,7 @@ function pasteHtmlAtCaret(html) {
     }
 }
 
-
-function AddCheckbox(cb) {
-    var el = pasteHtmlAtCaret('<div></div>');
+function createCheckboxAt(el, cb) {
     var chk = document.createElement('input');
     chk.setAttribute('type', 'checkbox');
     ChkAddClick(chk, cb);
@@ -238,6 +236,12 @@ function AddCheckbox(cb) {
     var spn = document.createElement('span');
     spn.innerText = ' ';
     el.appendChild(spn);
+}
+
+function AddCheckbox(cb) {
+    var el = pasteHtmlAtCaret('<div></div>');
+    el.setAttribute('data-checkbox', 'true');
+    createCheckboxAt(el, cb);
     return el;
 }
 
@@ -258,9 +262,18 @@ function Editable(editable) {
     editable.onkeydown = function (e) {
         if (e.key == 'C' && e.shiftKey && e.ctrlKey) {
             // insert a checkbox
-            var el = AddCheckbox(SaveInner);
-            setCaret(el);
+            var el = getSelectionStart();
+
+            var div = document.createElement('div');
+            createCheckboxAt(div, SaveInner);
+            el.parentElement.appendChild(div);
+            div.setAttribute('data-checkbox', 'true');
+            setCaret(div);
+            
+            //var el = AddCheckbox(SaveInner);
+            //setCaret(el);
         } else if (e.key == 'Enter') {
+
             function getSelectionStart() {
                 var node = document.getSelection().anchorNode;
                 return (node.nodeType == 3 ? node.parentNode : node);
@@ -273,16 +286,21 @@ function Editable(editable) {
                 (parentNode.children.length > 0 && parentNode.children[0].getAttribute('type') == 'checkbox');
 
             if (isCheckboxNode && el.innerText.split(' ').join('') != '') {
+                console.log('Its a checkbox, with text');
 
-                var frag = AddCheckbox(SaveInner);
-                frag.setAttribute('data-checkbox', 'true');
-                setCaret(frag);
+                var div = document.createElement('div');
+                createCheckboxAt(div, SaveInner);
+                el.parentElement.parentElement.appendChild(div);                
+                div.setAttribute('data-checkbox', 'true');
+                setCaret(div);
+
                 e.preventDefault();
-                return false;
+
             } else if (isCheckboxNode) {
                 el.parentNode.parentNode.removeChild(el.parentNode);
+            } else {
+                console.log('Its not a checkbox');
             }
-            console.log(el);
         }
         return true;
     };
