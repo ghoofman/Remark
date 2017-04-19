@@ -5,3 +5,5 @@ tmp/
 !/**/*.obj
 bower_components/
 dist/
+dist.zip
+manifest.json
