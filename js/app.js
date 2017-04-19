@@ -118,19 +118,47 @@ if (chrome && chrome.storage) {
 
 var currentTab = "content-default";
 
+function ChkAddClick(chk, cb) {
+    chk.onclick = function () {
+        console.log(chk.getAttribute('checked'));
+        var spans = chk.parentElement.getElementsByTagName('span');
+
+        if (chk.getAttribute('checked') != 'checked') {
+            chk.setAttribute('checked', 'checked');
+            for (var i = 0; i < spans.length; i++) {
+                spans[i].setAttribute('style', 'text-decoration: line-through');
+            }
+        } else {
+            chk.removeAttribute('checked');
+            for (var i = 0; i < spans.length; i++) {
+                spans[i].setAttribute('style', '');
+            }
+        }
+
+        cb && cb();
+    }
+}
+
 function FixStyles() {
     //console.log(document.getElementById("editor-content"), document.getElementById("editor-content").children);
 
     var divs = document.querySelectorAll('#editor-content div, #editor-content u, #editor-content span');
     for (var i=0, len = divs.length; i<len; i++){
-    divs[i].setAttribute('class', '');
-    if(divs[i].innerHTML.startsWith('###')) {
-        divs[i].setAttribute('class', 'very-large');
-    } else if(divs[i].innerHTML.startsWith('##')) {
-        divs[i].setAttribute('class', 'large');
-    } else if(divs[i].innerHTML.startsWith('#')) {
-        divs[i].setAttribute('class', 'medium');
+        divs[i].setAttribute('class', '');
+        if(divs[i].innerHTML.startsWith('###')) {
+            divs[i].setAttribute('class', 'very-large');
+        } else if(divs[i].innerHTML.startsWith('##')) {
+            divs[i].setAttribute('class', 'large');
+        } else if(divs[i].innerHTML.startsWith('#')) {
+            divs[i].setAttribute('class', 'medium');
+        }
     }
+}
+
+function FixClicks(cb) {
+    var chks = document.querySelectorAll('#editor-content input[type=checkbox]');
+    for (var i = 0, len = chks.length; i < len; i++) {
+        ChkAddClick(chks[i], cb);
     }
 }
 
@@ -200,29 +228,43 @@ function pasteHtmlAtCaret(html) {
     }
 }
 
-for (var i=0, len = editable.length; i<len; i++){
-    editable[i].setAttribute('data-orig',editable[i].innerHTML);
+
+function AddCheckbox(cb) {
+    var el = pasteHtmlAtCaret('<div></div>');
+    var chk = document.createElement('input');
+    chk.setAttribute('type', 'checkbox');
+    ChkAddClick(chk, cb);
+    el.appendChild(chk);
+    var spn = document.createElement('span');
+    spn.innerText = ' ';
+    el.appendChild(spn);
+    return el;
+}
+
+function Editable(editable) {
+
+    editable.setAttribute('data-orig', editable.innerHTML);
     function SaveInner() {
         FixStyles();
-        if (this.innerHTML == this.getAttribute('data-orig')) {
+        if (editable.innerHTML == editable.getAttribute('data-orig')) {
             // no change
         }
         else {
             // change has happened, store new value
-            SetStorage(currentTab, this.innerHTML);
+            SetStorage(currentTab, editable.innerHTML);
         }
     }
-    editable[i].onblur = SaveInner;
-    editable[i].onkeydown = function(e) {
-        if(e.key == 'C' && e.shiftKey && e.ctrlKey) {
+    editable.onblur = SaveInner;
+    editable.onkeydown = function (e) {
+        if (e.key == 'C' && e.shiftKey && e.ctrlKey) {
             // insert a checkbox
-            var el = pasteHtmlAtCaret('<div><input type="checkbox" value="checkbox1" /><span> </span></div>');
+            var el = AddCheckbox(SaveInner);
             setCaret(el);
             // el.onclick = function() {
             //     console.log('checkbox clicked');
             //     this.setAttribute('checked', 'checked');
             // }
-        } else if(e.key == 'Enter'){
+        } else if (e.key == 'Enter') {
             function getSelectionStart() {
                 var node = document.getSelection().anchorNode;
                 return (node.nodeType == 3 ? node.parentNode : node);
@@ -234,20 +276,22 @@ for (var i=0, len = editable.length; i<len; i++){
                 (el.children.length > 0 && el.children[0].getAttribute('type') == 'checkbox') ||
                 (parentNode.children.length > 0 && parentNode.children[0].getAttribute('type') == 'checkbox');
 
-            if(isCheckboxNode && el.innerText.split(' ').join('') != '') {
-                var frag = pasteHtmlAtCaret('<div data-checkbox="true"><input type="checkbox" value="checkbox1" /><span> </span></div>');
+            if (isCheckboxNode && el.innerText.split(' ').join('') != '') {
+
+                var frag = AddCheckbox(SaveInner);
+                frag.setAttribute('data-checkbox', 'true');
                 setCaret(frag);
                 e.preventDefault();
                 return false;
-            } else if(isCheckboxNode) {
+            } else if (isCheckboxNode) {
                 el.parentNode.parentNode.removeChild(el.parentNode);
             }
             console.log(el);
         }
         return true;
     };
-    editable[i].onkeyup = SaveInner;
-    editable[i].addEventListener("paste", function(e) {
+    editable.onkeyup = SaveInner;
+    editable.addEventListener("paste", function (e) {
         // cancel paste
         e.preventDefault();
 
@@ -257,6 +301,10 @@ for (var i=0, len = editable.length; i<len; i++){
         // insert text manually
         document.execCommand("insertHTML", false, text);
     });
+}
+
+for (var i = 0, len = editable.length; i < len; i++){
+    Editable(editable[i]);
 }
 
 window.onkeydown = function (event) {
@@ -303,7 +351,19 @@ window.addEventListener('storage', function() {
 
 // Retrieve
 GetStorage(currentTab, function (data) {
-    document.getElementById("editor-content").innerHTML = data;
+    var editable = document.getElementById("editor-content");
+    editable.innerHTML = data;
+
+    FixClicks(function() {
+        FixStyles();
+        if (editable.innerHTML == editable.getAttribute('data-orig')) {
+            // no change
+        }
+        else {
+            // change has happened, store new value
+            SetStorage(currentTab, editable.innerHTML);
+        }
+    });
 });
 
 function theme(t) {
