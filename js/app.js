@@ -119,7 +119,7 @@ if (chrome && chrome.storage) {
 var currentTab = "content-default";
 
 function ChkAddClick(chk, cb) {
-    chk.onclick = function () {
+    chk.addEventListener('click', function () {
         console.log(chk.getAttribute('checked'));
         var spans = chk.parentElement.getElementsByTagName('span');
 
@@ -136,7 +136,7 @@ function ChkAddClick(chk, cb) {
         }
 
         cb && cb();
-    }
+    });
 }
 
 function FixStyles() {
@@ -260,10 +260,6 @@ function Editable(editable) {
             // insert a checkbox
             var el = AddCheckbox(SaveInner);
             setCaret(el);
-            // el.onclick = function() {
-            //     console.log('checkbox clicked');
-            //     this.setAttribute('checked', 'checked');
-            // }
         } else if (e.key == 'Enter') {
             function getSelectionStart() {
                 var node = document.getSelection().anchorNode;
@@ -354,15 +350,8 @@ GetStorage(currentTab, function (data) {
     var editable = document.getElementById("editor-content");
     editable.innerHTML = data;
 
-    FixClicks(function() {
-        FixStyles();
-        if (editable.innerHTML == editable.getAttribute('data-orig')) {
-            // no change
-        }
-        else {
-            // change has happened, store new value
-            SetStorage(currentTab, editable.innerHTML);
-        }
+    FixClicks(function () {
+        SetStorage(currentTab, editable.innerHTML);
     });
 });
 
@@ -391,8 +380,9 @@ function settings() {
 }
 
 var settingToggle = document.querySelectorAll('.settings-toggle');
-for (var i=0, len = settingToggle.length; i<len; i++) {
-    settingToggle[i].onclick = settings;
+for (var i = 0, len = settingToggle.length; i < len; i++) {
+
+    settingToggle[i].addEventListener('click', settings);
 }
 
 var tabArray = [];
@@ -434,7 +424,7 @@ function BuildTabList() {
         if(tabs[i].innerHTML.startsWith(' ')) {
             AddClass(tabs[i], 'child');
         }
-        tabs[i].onclick = function() {
+        tabs[i].addEventListener('click', function () {
             AddClass(document.getElementById("settings"), 'hidden');
             var tab = this.getAttribute('data-tab');
             ResetTabs();
@@ -442,10 +432,17 @@ function BuildTabList() {
             currentTab = "content-" + tab;
             RemoveClass(document.getElementById('app'), 'show-settings');
 
+            console.log('Get storage');
+
             GetStorage(currentTab, function (data) {
-                document.getElementById("editor-content").innerHTML = data;
-                document.getElementById('editor-content').focus();
+                var editable = document.getElementById("editor-content");
+                editable.innerHTML = data;
+                editable.focus();
                 setCaret(document.getElementById('editor-content'));
+                console.log('Fix clicks');
+                FixClicks(function () {
+                    SetStorage(currentTab, editable.innerHTML);
+                });
             }, function () {
                 document.getElementById("editor-content").innerHTML = '';
                 var emptyNode = AddNode(document.getElementById('editor-content'), 'div', ' ');
@@ -453,7 +450,7 @@ function BuildTabList() {
                 setCaretStart(document.getElementById('editor-content'));
             });
 
-        }
+        });
     }
 
     SetStorage('tabs', JSON.stringify(tabArray));
@@ -470,25 +467,25 @@ function BuildEditTabList() {
         var upNode = AddTableCellNode(rowNode);
             AddNode(upNode, 'img').setAttribute('src', 'arrow-up.png');
             upNode.setAttribute('data-index', i);
-            upNode.onclick = function() {
+            upNode.addEventListener('click', function () {
                 var ind = parseInt(this.getAttribute('data-index'));
                 tabArray.move(ind, ind - 1);
                 BuildEditTabList();
                 BuildTabList();
-            }
+            });
         var downNode = AddTableCellNode(rowNode);
             AddNode(downNode, 'img').setAttribute('src', 'arrow-down.png');
             downNode.setAttribute('data-index', i);
-            downNode.onclick = function() {
+            downNode.addEventListener('click', function () {
                 var ind = parseInt(this.getAttribute('data-index'));
                 var targ = ind + 1;
-                if(ind + 1 >= tabArray.length) {
+                if (ind + 1 >= tabArray.length) {
                     targ = 0;
                 }
                 tabArray.move(ind, targ);
                 BuildEditTabList();
                 BuildTabList();
-            }
+            });
 
         var nameNode = AddTableCellNode(rowNode, tabArray[i].name);
             nameNode.setAttribute('contenteditable', 'true');
@@ -514,23 +511,23 @@ function BuildEditTabList() {
         var delNode = AddTableCellNode(rowNode);
             AddNode(delNode, 'img').setAttribute('src', 'remove.png');
             delNode.setAttribute('data-index', i);
-            delNode.onclick = function() {
-                if(confirm('Are you sure you want to delete this tab?')) {
+            delNode.addEventListener('click', function () {
+                if (confirm('Are you sure you want to delete this tab?')) {
                     var ind = parseInt(this.getAttribute('data-index'));
                     tabArray.splice(ind, 1);
                     BuildEditTabList();
                     BuildTabList();
                 }
-            }
+            });
 
         tabList.appendChild(rowNode);
     }
 
 }
 
-document.getElementById('create-tab').onclick = function() {
+document.getElementById('create-tab').addEventListener('click', function () {
     var nameVal = document.getElementById('new-tab-name').value;
-    if(nameVal) {
+    if (nameVal) {
         tabArray.push({
             name: nameVal,
             id: nameVal
@@ -539,7 +536,7 @@ document.getElementById('create-tab').onclick = function() {
         BuildEditTabList();
         BuildTabList();
     }
-}
+});
 BuildEditTabList();
 BuildTabList();
 
@@ -547,27 +544,25 @@ BuildTabList();
 
 var themes = document.querySelectorAll('a[data-theme]');
 for (var i=0, len = themes.length; i<len; i++) {
-    themes[i].onclick = function() {
+    themes[i].addEventListener('click', function () {
         console.log('set theme');
         theme(this.getAttribute('data-theme'));
-    };
+    });
 }
 
-    // document.getElementById('clear-state').onclick = function() {
-    //     localStorage.clear();
-    // }
-document.getElementById('app').onclick = function (e) {
+
+document.getElementById('app').addEventListener('click', function (e) {
     var cls = e.target.getAttribute('class');
     if (!cls) return;
-    if(e.target.getAttribute('class').indexOf('refocus') > -1) {
+    if (e.target.getAttribute('class').indexOf('refocus') > -1) {
         document.getElementById('editor-content').focus();
     }
-}
+});
 
-document.getElementById('customcssinput').onkeyup = function () {
+document.getElementById('customcssinput').addEventListener('keyup', function () {
     document.getElementById('customcss').innerHTML = this.value;
     SetStorage('customcss', this.value);
-}
+});
 
 GetStorage('customcss', function (data) {
     document.getElementById('customcssinput').value = data;
